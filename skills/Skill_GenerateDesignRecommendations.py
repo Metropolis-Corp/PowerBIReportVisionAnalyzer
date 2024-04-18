@@ -5,6 +5,7 @@ from azure.identity import DefaultAzureCredential
 from azure.ai.openai import ConversationClient
 from autogen.exceptions import SkillExecutionError
 import autogen
+from config import AZURE_OPENAI_ENDPOINT  # Import the endpoint
 
 class GenerateDesignRecommendations(autogen.Skill):
     """
@@ -43,10 +44,12 @@ class GenerateDesignRecommendations(autogen.Skill):
         "required": ["recommendations"]
     }
 
-    def __init__(self, endpoint=None):
+    def __init__(self):
         super().__init__()
         self.azure_credential = DefaultAzureCredential()
-        endpoint = endpoint or os.getenv("AZURE_OPENAI_ENDPOINT")
+        endpoint = AZURE_OPENAI_ENDPOINT  # Use the imported endpoint
+        if not endpoint:
+            raise ValueError("Azure OpenAI endpoint is not configured.")
         self.client = ConversationClient(endpoint=endpoint, credential=self.azure_credential)
         logging.basicConfig(level=logging.INFO)
 
@@ -127,8 +130,7 @@ class GenerateDesignRecommendations(autogen.Skill):
 
 # Example usage
 if __name__ == "__main__":
-    endpoint = "https://your-endpoint-here"
-    skill_instance = GenerateDesignRecommendations(endpoint)
+    skill_instance = GenerateDesignRecommendations()
     input_example = {"insights": "Here are detailed insights about your Power BI report's design."}
     try:
         result = skill_instance.execute(input_example)

@@ -1,0 +1,136 @@
+openapi: 3.0.0
+info:
+  title: Bing Search Azure Function API
+  description: An Azure Function API to perform Bing web searches from ChatGPT. Authenticate requests using the provided API key.
+  version: 1.0.0
+servers:
+  - url: https://mybingsearch.azurewebsites.net/api
+paths:
+  /BingSearchFunction:
+    get:
+      operationId: searchBing
+      summary: Perform a Bing web search
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Query string to search for in Bing.
+        - name: responseFilter
+          in: query
+          schema:
+            type: string
+            enum:
+              - Webpages
+              - Images
+              - Videos
+              - News
+            default: Webpages
+          description: Type of search results to filter by.
+        - name: count
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 10
+          description: Number of search results to return.
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+          description: Offset for search results to start from.
+        - name: mkt
+          in: query
+          schema:
+            type: string
+            default: en-WW
+          description: Market code for regional results.
+        - name: safeSearch
+          in: query
+          schema:
+            type: string
+            enum:
+              - Off
+              - Moderate
+              - Strict
+            default: Moderate
+          description: Level of filtering for adult content.
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/WebPage"
+                  pagination:
+                    type: object
+                    properties:
+                      nextOffset:
+                        type: integer
+                        description: Offset for the next set of results.
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Missing required parameter q
+                  code:
+                    type: integer
+                    example: 400
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Invalid or missing API key
+                  code:
+                    type: integer
+                    example: 401
+      security:
+        - ApiKeyAuth: []
+components:
+  schemas:
+    WebPage:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        url:
+          type: string
+        isFamilyFriendly:
+          type: boolean
+        displayUrl:
+          type: string
+        snippet:
+          type: string
+        dateLastCrawled:
+          type: string
+          format: date-time
+        language:
+          type: string
+        isNavigational:
+          type: boolean
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      name: x-functions-key
+      in: header

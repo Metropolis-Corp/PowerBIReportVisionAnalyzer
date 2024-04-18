@@ -1,0 +1,113 @@
+openapi: 3.0.0
+info:
+  title: Azure Functions API for ChatGPT Custom Action
+  description: This API allows interaction with a custom Azure Function designed for processing ChatGPT actions, including filtering conversations by various criteria.
+  version: 1.0.1
+servers:
+  - url: https://chatpowerbi.azurewebsites.net/api
+    description: Main production server
+paths:
+  /MyFunction:
+    get:
+      operationId: getConversations
+      summary: Retrieves conversations from Cosmos DB based on various filters.
+      parameters:
+        - name: userId
+          in: query
+          description: Filter conversations by userId.
+          required: false
+          schema:
+            type: string
+        - name: conversationId
+          in: query
+          description: Filter conversations by conversationId.
+          required: false
+          schema:
+            type: string
+        - name: searchString
+          in: query
+          description: Partial search string for conversation title or message content.
+          required: false
+          schema:
+            type: string
+        - name: startDate
+          in: query
+          description: Start date for filtering conversations, in ISO 8601 format.
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - name: endDate
+          in: query
+          description: End date for filtering conversations, in ISO 8601 format.
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - name: page
+          in: query
+          description: Page number for pagination. Defaults to 1 if not specified.
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: pageSize
+          in: query
+          description: Number of items per page for pagination. Defaults to 10 if not specified.
+          required: false
+          schema:
+            type: integer
+            default: 10
+      responses:
+        "200":
+          description: Successfully retrieved conversations.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Conversation"
+        "400":
+          description: >
+            Bad request. This can occur for several reasons: required parameters are missing, pagination parameters are invalid, date formats are incorrect, startDate is later than endDate, or non-positive integers are used for page/pageSize.
+        "404":
+          description: Not Found. The specified conversationId does not exist.
+        "500":
+          description: >
+            Internal server error. Issues could include backend service failures, Cosmos DB query errors, or unexpected server-side errors.
+components:
+  schemas:
+    Conversation:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "42b598e7-747f-4f24-ae98-06c6dfc23674"
+        type:
+          type: string
+          example: "conversation"
+        createdAt:
+          type: string
+          format: date-time
+          example: "2024-03-03T01:01:00.740002"
+        updatedAt:
+          type: string
+          format: date-time
+          example: "2024-03-03T01:03:23.989244"
+        userId:
+          type: string
+          example: "ad8c1754-f9ae-457b-bc9d-3e0d20060d54"
+        title:
+          type: string
+          example: "Power BI OAuth2 Authentication"
+        content:
+          type: string
+          description: "Content of the message or conversation description."
+          example: "Details about OAuth2 authentication process."
+securitySchemes:
+  ApiKeyAuth:
+    type: apiKey
+    in: header
+    name: x-functions-key
+security:
+  - ApiKeyAuth: []

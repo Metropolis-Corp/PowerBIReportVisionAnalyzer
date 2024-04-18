@@ -1,17 +1,15 @@
 import requests
-import os
-from dotenv import load_dotenv
-import powerbi_client
 import logging
+from config import TENANT_ID, CLIENT_ID, CLIENT_SECRET, RESOURCE_URL, SCOPE_URL, DATASET_ID
+import powerbi_client
 
 class PowerBIAuthenticator:
     def __init__(self):
-        load_dotenv()  # Consider adding conditional logic for production
-        self.tenant_id = os.getenv("TENANT_ID")
-        self.client_id = os.getenv("CLIENT_ID")
-        self.client_secret = os.getenv("CLIENT_SECRET")
-        self.resource = "https://analysis.windows.net/powerbi/api"
-        self.scope = "https://analysis.windows.net/powerbi/api/.default"
+        self.tenant_id = TENANT_ID
+        self.client_id = CLIENT_ID
+        self.client_secret = CLIENT_SECRET
+        self.resource = RESOURCE_URL
+        self.scope = SCOPE_URL
         self.token_endpoint = f"https://login.microsoftonline.com/{self.tenant_id}/oauth2/token"
 
     def get_powerbi_access_token(self):
@@ -24,7 +22,7 @@ class PowerBIAuthenticator:
         }
         try:
             response = requests.post(self.token_endpoint, data=payload)
-            response.raise_for_status()  # Raises HTTPError for bad responses
+            response.raise_for_status()
             token_data = response.json()
             return token_data.get("access_token")
         except requests.exceptions.HTTPError as e:
@@ -61,6 +59,5 @@ class PowerBIAuthenticator:
 # Usage
 if __name__ == "__main__":
     authenticator = PowerBIAuthenticator()
-    dataset_id = "your_dataset_id_here"
-    updates = authenticator.last_data_update_checker(dataset_id)
+    updates = authenticator.last_data_update_checker(DATASET_ID)
     print(updates)

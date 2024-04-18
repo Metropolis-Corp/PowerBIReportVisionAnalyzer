@@ -1,0 +1,114 @@
+openapi: 3.0.0
+info:
+  title: Power BI Management API
+  description: Interacts with Power BI services to manage workspaces and datasets.
+  version: 1.0.0
+servers:
+  - url: https://login.microsoftonline.com/{tenantId}/oauth2
+    description: Authentication server
+    variables:
+      tenantId:
+        default: common # or your TENANT_ID
+  - url: https://api.powerbi.com/v1.0/myorg
+    description: Power BI API server
+paths:
+  /token:
+    post:
+      operationId: getAccessToken
+      summary: Obtains access token for API authentication.
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                grant_type:
+                  type: string
+                  default: client_credentials
+                client_id:
+                  type: string
+                client_secret:
+                  type: string
+                resource:
+                  type: string
+                  default: 'https://analysis.windows.net/powerbi/api'
+      responses:
+        '200':
+          description: Access token successfully obtained.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                  expires_in:
+                    type: integer
+                  token_type:
+                    type: string
+        '400':
+          description: Bad request. Failed to obtain the token.
+  /groups:
+    get:
+      operationId: listWorkspaces
+      summary: Lists all Power BI workspaces.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: A list of Power BI workspaces.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  value:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Workspace'
+  /groups/{groupId}/datasets:
+    get:
+      operationId: listDatasetsInWorkspace
+      summary: Lists all datasets in a given workspace.
+      parameters:
+        - name: groupId
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: A list of datasets in the workspace.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  value:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Dataset'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Workspace:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+    Dataset:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
