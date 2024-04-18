@@ -27,10 +27,8 @@ The Power BI Report Vision Analyzer workflow leverages the capabilities of AutoG
 
 - Automated export of Power BI report pages as images
 - Deep insights extraction from exported images using GPT-4 Vision
-- Dynamic design criteria and benchmarks for superior visual quality
 - Interactive visualization of proposed changes and recommendations
 - Performance optimizations and error handling mechanisms
-- Compliance with data protection regulations (e.g., GDPR)
 
 ## Getting Started
 
@@ -40,9 +38,6 @@ To get started with the Power BI Report Vision Analyzer workflow, follow these s
 2. Install the required dependencies: `pip install -r requirements.txt`
 3. Configure the necessary API keys and credentials in the `config.py` file
 4. Review the agents, skills, and workflows to understand their functionalities
-5. Run the main script to initiate the workflow: `python main.py`
-
-For detailed instructions and examples, please refer to the [documentation](docs/README.md).
 
 ## Workflow
 
