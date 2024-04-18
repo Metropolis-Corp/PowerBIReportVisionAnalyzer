@@ -1,19 +1,28 @@
-import autogen
+"""
+This module provides the EncodeImageForAnalysis skill for encoding images.
+"""
+
 import base64
 import os
-from autogen.exceptions import SkillExecutionError
-import autogen.logger as logger
+from autogen import Skill, SkillExecutionError, logger
 
-class EncodeImageForAnalysis(autogen.Skill):
+
+class EncodeImageForAnalysis(Skill):
+    """
+    Encodes the exported report image in a format (e.g., base64) that is
+    compatible with GPT-4 Vision API requests, ensuring the image file exists,
+    is within size limits, and logs the encoding process for troubleshooting.
+    """
+
     name = "EncodeImageForAnalysis"
-    description = "Encodes the exported report image in a format (e.g., base64) that is compatible with GPT-4 Vision API requests, ensuring the image file exists, is within size limits, and logs the encoding process for troubleshooting."
+    description = "Encodes the exported report image for analysis."
 
     input_schema = {
         "type": "object",
         "properties": {
             "image_file": {
                 "type": "string",
-                "description": "The absolute or relative path of the image file of the exported report page."
+                "description": "The path of the image file to be encoded."
             }
         },
         "required": ["image_file"]
@@ -37,7 +46,9 @@ class EncodeImageForAnalysis(autogen.Skill):
 
         # Validate file extension (simple check for demonstration)
         if not image_file.lower().endswith(('.png', '.jpg', '.jpeg')):
-            raise SkillExecutionError("Image file is not in an expected format (.png, .jpg, .jpeg)")
+            raise SkillExecutionError(
+                "Image file is not in an expected format (.png, .jpg, .jpeg)"
+            )
 
         # Validate and encode the image file
         encoded_image = self.encode_image(image_file)
@@ -55,17 +66,18 @@ class EncodeImageForAnalysis(autogen.Skill):
         MAX_IMAGE_SIZE_MB = 5
         file_size_mb = os.path.getsize(image_path) / (1024 * 1024)
         if file_size_mb > MAX_IMAGE_SIZE_MB:
-            raise SkillExecutionError(f"Image file exceeds the maximum size of {MAX_IMAGE_SIZE_MB} MB: {image_path}")
+            raise SkillExecutionError(
+                f"Image file exceeds the maximum size of {MAX_IMAGE_SIZE_MB} MB: "
+                f"{image_path}"
+            )
 
         # Log the encoding process
         logger.info(f"Encoding image: {image_path}, size: {file_size_mb:.2f} MB")
-        
+
         try:
             with open(image_path, "rb") as image_file:
                 encoded_image = base64.b64encode(image_file.read()).decode('utf-8')
                 return encoded_image
         except Exception as e:
             logger.error(f"Failed to encode image: {e}")
-            raise SkillExecutionError(f"Failed to encode image: {str(e)}")
-
-# Ensure the autogen package is properly installed and configured in your environment to use this skill effectively.
+            raise SkillExecutionError(f"Failed to encode image: {str(e)}") from e

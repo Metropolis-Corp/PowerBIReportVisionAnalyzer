@@ -6,5 +6,4 @@ autogenstudio
 powerbiclient
 openai
 jsonschema
-azure-ai-openai
 autogen

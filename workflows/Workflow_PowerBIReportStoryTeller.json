@@ -1,0 +1,43 @@
+{
+    "Workflow": "PowerBIReportStoryTeller",
+    "Description": "Transforms Power BI dashboard images into narrative insights, detailing the communication patterns and efficiency of Cisco Call Manager CDRs, providing recommendations for improvements.",
+    "Steps": [
+      {
+        "Step": 1,
+        "Skill": "ExportToImage",
+        "Description": "Capture snapshots of Power BI report pages for analysis.",
+        "Tasks": [
+          "Authenticate with Power BI using secure credentials.",
+          "Export the target report page as an image, optimized for clarity and detail."
+        ]
+      },
+      {
+        "Step": 2,
+        "Skill": "AnalyzeImageWithGPT4Vision",
+        "Description": "Decode and analyze the exported image for design quality and data clarity.",
+        "Tasks": [
+          "Encode and send the image to GPT-4 Vision API.",
+          "Receive and interpret the analysis, focusing on the usability and readability of the information presented."
+        ]
+      },
+      {
+        "Step": 3,
+        "Skill": "Skill_StoryTeller",
+        "Description": "Translate data points into a coherent narrative describing business communication patterns and system efficiency.",
+        "Tasks": [
+          "Analyze call patterns to identify peak periods and their business implications.",
+          "Assess the average call durations for customer service insights.",
+          "Evaluate call routing efficiency for potential improvements in system configuration."
+        ],
+        "Output": "Narrative report summarizing the insights from the Power BI dashboard with actionable recommendations."
+      }
+    ],
+    "FinalOutput": "A comprehensive narrative and visual report that not only summarizes the data but also tells the story behind it, with actionable insights for business optimization.",
+    "Considerations": [
+      "Ensure all data handling is secure and compliant with data protection regulations.",
+      "Incorporate robust error handling and retry mechanisms across all steps.",
+      "Maintain a flexible and user-friendly interface for interactions with the workflow.",
+      "Enable customization options for adapting the narrative insights based on specific business contexts."
+    ]
+  }
+  
