@@ -2,6 +2,8 @@
 
 AutoGen Studio is a powerful platform that enables the creation of sophisticated AI-driven workflows using natural language commands. This repository showcases the implementation of the Power BI Report Vision Analyzer workflow, which automates the process of exporting Power BI reports as images, reviewing these images for design quality and clarity, and making design recommendations based on industry standards and GPT-4 Vision insights.
 
+Continue the conversation with on ChatGPT with "PowerBI Report Vision Analyzer" <https://chat.openai.com/g/g-aoqysiABA-powerbi-report-vision-analyzer>
+
 ## Table of Contents
 
 - [AutoGen Studio: Power BI Report Vision Analyzer](#autogen-studio-power-bi-report-vision-analyzer)
