@@ -3,3 +3,8 @@ requests
 pandas
 python-dotenv
 autogenstudio
+powerbi-client
+openai
+jsonschema
+azure-ai-openai
+autogen
