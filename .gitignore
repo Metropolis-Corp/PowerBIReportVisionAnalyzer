@@ -175,7 +175,6 @@ encodings/
 .promptflow
 
 config.json
-config.py
 .ai
 Miniconda3-latest-MacOSX-arm64.sh
 evaluation_output
