@@ -2,29 +2,29 @@ import os
 import base64
 import mimetypes
 import imghdr
-from PIL import Image
+import logging
 from openai import AzureOpenAI
 from openai.error import APIError, APIConnectionError, RateLimitError, AuthenticationError
-from autogen.skill_base import Skill, SkillExecutionError
 from jsonschema import validate, ValidationError
+from autogen.skill_base import Skill, SkillExecutionError
 
-# Initialize the Azure OpenAI client with necessary API details
+# Make sure to configure your Python path or environment correctly to find custom modules
+# Assume that necessary configurations and API keys are correctly set in the environment variables
 client = AzureOpenAI(
     api_version="2024-02-01",
-    # Corrected from list to direct environment variable access
-    azure_endpoint=os.environ["AZURE_OPENAI_ENDPOINT"],
-    api_key=os.environ["AZURE_OPENAI_API_KEY"]
+    azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
+    api_key=os.getenv("AZURE_OPENAI_API_KEY")
 )
-
 
 class AnalyzeImageWithGPT4Vision(Skill):
     """
-    Analyzes images using GPT-4 Vision to extract insights, summaries, or specific data points.
+    A skill for analyzing images using GPT-4 Vision to extract insights, summaries, or specific data points.
+    This skill takes an image file path and a question about the image as inputs and uses GPT-4 Vision to generate
+    relevant answers or insights.
     """
     name = "AnalyzeImageWithGPT4Vision"
     description = "Analyzes images using GPT-4 Vision to extract insights, summaries, or specific data points."
 
-    # Define input and output JSON schema for validation
     input_schema = {
         "type": "object",
         "properties": {
@@ -54,29 +54,22 @@ class AnalyzeImageWithGPT4Vision(Skill):
     def execute(self, input_data):
         """
         Execute the skill with the given input data.
-        :param input_data: Input data for the skill.
-        :return: Output data from the skill.
+        Validates the input, processes the image and question, and returns the analysis results.
         """
         self.validate_input(input_data)
         image_file = input_data["image_file"]
         question = input_data["question"]
 
         if not os.path.isfile(image_file):
-            raise SkillExecutionError(
-                f"Image file does not exist: {image_file}")
+            raise SkillExecutionError(f"Image file does not exist: {image_file}")
 
-        # Check if the file is a supported image format
         file_type, _ = mimetypes.guess_type(image_file)
-        # Simplified format checks to PNG and JPEG only
         if file_type not in ["image/png", "image/jpeg"]:
-            raise SkillExecutionError(
-                "Unsupported image format. Supported formats: PNG, JPEG.")
+            raise SkillExecutionError("Unsupported image format. Supported formats: PNG, JPEG.")
 
         detected_format = imghdr.what(image_file)
-        # Simplified format checks to PNG and JPEG only
         if detected_format not in ["png", "jpeg"]:
-            raise SkillExecutionError(
-                "Image content does not match the expected format.")
+            raise SkillExecutionError("Image content does not match the expected format.")
 
         image_data = self.encode_image(image_file)
         answer = self.ask_gpt4_vision(image_data, question)
@@ -86,81 +79,60 @@ class AnalyzeImageWithGPT4Vision(Skill):
 
     def encode_image(self, image_path):
         """
-        Encode the image file in base64 format.
-        :param image_path: Path to the image file.
-        :return: Base64 encoded image data.
+        Encode the image file in base64 format to prepare it for analysis.
         """
-        try:
-            with open(image_path, "rb") as image_file:
-                return base64.b64encode(image_file.read()).decode('utf-8')
-        except FileNotFoundError as exc:
-            raise SkillExecutionError(f"File not found: {image_path}") from exc
+        with open(image_path, "rb") as image_file:
+            return base64.b64encode(image_file.read()).decode('utf-8')
 
     def ask_gpt4_vision(self, image_data, question, max_tokens=250, temperature=0.5):
         """
-        Submit the base64-encoded image and question to the GPT-4 Vision API and retrieve the answer.
-        :param image_data: Base64 encoded image data.
-        :param question: Question to pose regarding the image.
-        :param max_tokens: Maximum number of tokens in the generated answer.
-        :param temperature: Sampling temperature for generating the answer.
-        :return: Generated answer from GPT-4 Vision.
+        Interact with GPT-4 Vision API to analyze the encoded image and provide answers to the given question.
         """
         try:
             response = client.Completion.create(
                 model="gpt-4-vision",
                 prompt=question,
-                attachments=[{
-                    "data": f"data:image/png;base64,{image_data}",
-                    "type": "image/png"
-                }],
+                attachments=[{"data": f"data:image/png;base64,{image_data}", "type": "image/png"}],
                 max_tokens=max_tokens,
                 temperature=temperature
             )
             if response.choices and response.choices[0].text:
                 return response.choices[0].text.strip()
-            raise SkillExecutionError(
-                "Unexpected response format from GPT-4 Vision API.")
+            else:
+                raise SkillExecutionError("Unexpected response format from GPT-4 Vision API.")
         except RateLimitError as e:
-            raise SkillExecutionError(f"Rate limit exceeded: {str(e)}") from e
+            raise SkillExecutionError(f"Rate limit exceeded: {e}") from e
         except AuthenticationError as e:
-            raise SkillExecutionError(f"Authentication error: {str(e)}") from e
+            raise SkillExecutionError(f"Authentication error: {e}") from e
         except APIError as e:
-            raise SkillExecutionError(f"API error: {str(e)}") from e
+            raise SkillExecutionError(f"API error: {e}") from e
         except APIConnectionError as e:
-            raise SkillExecutionError(f"API connection error: {str(e)}") from e
-        except Exception as e:
-            raise SkillExecutionError(f"Unexpected error: {str(e)}") from e
+            raise SkillExecutionError(f"API connection error: {e}") from e
 
     def validate_input(self, input_data):
         """
-        Validates the input data against the defined input schema.
-        :param input_data: Input data to validate.
-        :raises SkillExecutionError: If the input data is invalid.
+        Validate the input data against the defined schema.
         """
         try:
             validate(instance=input_data, schema=self.input_schema)
         except ValidationError as e:
-            raise SkillExecutionError(f"Invalid input data: {str(e)}") from e
+            raise SkillExecutionError(f"Invalid input data: {e}") from e
 
     def validate_output(self, output_data):
         """
-        Validates the output data against the defined output schema.
-        :param output_data: Output data to validate.
-        :raises SkillExecutionError: If the output data is invalid.
+        Validate the output data against the defined schema.
         """
         try:
-            validate(output_data, self.output_schema)
+            validate(instance=output_data, schema=self.output_schema)
         except ValidationError as e:
-            raise SkillExecutionError(f"Invalid output data: {str(e)}") from e
+            raise SkillExecutionError(f"Invalid output data: {e}") from e
 
-
-# Ensure the module can be easily executed or tested
+# Example usage
 if __name__ == "__main__":
     skill_instance = AnalyzeImageWithGPT4Vision()
-    input_example = {"image_file": "./sandbox/image.png",
-                     "question": "What does this image depict?"}
+    input_example = {"image_file": "./sandbox/image.png", "question": "What does this image depict?"}
     try:
         result = skill_instance.execute(input_example)
         print(result)
     except SkillExecutionError as e:
-        print(f"Error executing skill: {str(e)}")
+        logging.error(f"Error executing skill: {e}")
