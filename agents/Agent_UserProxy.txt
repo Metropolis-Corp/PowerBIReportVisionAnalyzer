@@ -1,0 +1,48 @@
+import autogen
+
+# Configuration for the language learning model with specific GPT-4 parameters and a fixed seed for consistency
+llm_config = {
+    "config_list": config_list_gpt4,  # List of specific configurations for GPT-4
+    "cache_seed": 42,                # Fixed seed value for deterministic behavior
+    "timeout_seconds": 30,           # Timeout for each operation
+    "error_handling": "graceful"     # Error handling policy
+}
+
+# User Proxy Agent Configuration
+user_proxy = autogen.UserProxyAgent(
+    name="userproxy",
+    system_message="A user proxy agent designed to relay user inputs to other agents without modification, ensuring seamless and secure data handling.",
+    code_execution_config={"last_n_messages": 2, "work_dir": "groupchat"},
+    human_input_mode="NEVER",  # The agent does not expect direct human input
+    error_policy=autogen.ErrorPolicy(
+        policy="log_and_continue",
+        action_on_failure="escalate",
+        retry_on_failure=True,
+        max_retries=2,
+        notify_on_critical=True
+    ),
+    skills=[
+        autogen.Skill(
+            name="InputValidation",
+            description="Validates and sanitizes incoming user data to prevent injection attacks and ensure clean data flow."
+        )
+    ],
+    logging_config={
+        "level": "INFO",
+        "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    },
+    security_measures={
+        "data_sanitization": True,
+        "secure_data_transmission": True
+    }
+)
+
+# Group Chat Setup with the User Proxy Agent
+groupchat = autogen.GroupChat(agents=[user_proxy], messages=[], max_round=12)
+
+# Group Chat Manager
+manager = autogen.GroupChatManager(groupchat=groupchat, llm_config=llm_config)
+
+# Interface for Agent Interaction
+groupchat_interface = autogen.GroupChatInterface(manager)
+groupchat_interface.start_session()

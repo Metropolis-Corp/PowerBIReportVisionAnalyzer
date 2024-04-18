@@ -1,0 +1,20 @@
+import autogen
+
+# Configuration for the language learning model with specific GPT-4 parameters and a fixed seed for consistency
+llm_config = {
+    "config_list": config_list_gpt4,
+    "cache_seed": 42,
+    "timeout_seconds": 30,
+    "error_handling": "graceful"
+}
+
+# Product Manager Agent
+pm = autogen.AssistantAgent(
+    name="Product_manager",
+    system_message="Delivers creative product insights and recommendations for report design improvements.",
+    llm_config=llm_config,
+    error_policy="log_and_continue"
+)
+
+# Assuming 'groupchat' is already initialized and refers to a GroupChat instance
+groupchat.add_agent(pm)

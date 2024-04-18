@@ -1,0 +1,70 @@
+{
+  "Workflow": "PowerBIReportVisionAnalyzer",
+  "Description": "Automates the process of exporting Power BI reports as images, reviewing these images for design quality and clarity, and making design recommendations based on industry standards and GPT-4 Vision insights, with performance optimizations and interactive features.",
+  "Steps": [
+    {
+      "Step": 1,
+      "Skill": "ExportToImage",
+      "Description": "Exports a Power BI report page as an image using optimized Power BI REST APIs or scripting capabilities.",
+      "Tasks": [
+        "Authenticate with Power BI REST API using service principal.",
+        "Identify and export the target report page efficiently using batch processing and optimized API calls.",
+        "Handle potential errors with robust retry mechanisms and save the exported image securely for further analysis."
+      ],
+      "Optimizations": [
+        "Implement parallel processing for exporting multiple report pages simultaneously.",
+        "Utilize caching mechanisms to store frequently exported report pages."
+      ]
+    },
+    {
+      "Step": 2,
+      "Skill": "AnalyzeImageWithGPT4Vision",
+      "Description": "Utilizes Azure OpenAI GPT-4 Vision API to extract deep insights from the exported images, focusing on design quality and content clarity.",
+      "Tasks": [
+        "Efficiently encode images and manage large file sizes with asynchronous API calls to GPT-4 Vision.",
+        "Implement caching for frequent queries to enhance performance and reduce latency.",
+        "Securely handle and encrypt sensitive information during transmission and processing."
+      ],
+      "Optimizations": [
+        "Implement rate limiting and throttling mechanisms to handle API limitations gracefully.",
+        "Utilize a message queue system to manage and prioritize image analysis requests."
+      ]
+    },
+    {
+      "Step": 3,
+      "Skill": "ImageQualityReview",
+      "Description": "Reviews the image against dynamically updated design criteria and benchmarks for superior visual quality and clarity.",
+      "Tasks": [
+        "Define and regularly update specific design criteria and benchmarks based on industry best practices.",
+        "Utilize GPT-4 Vision to assess and compare the image's quality with the latest industry standards.",
+        "Generate and refine suggestions for enhancing visual presentation based on credible design principles."
+      ],
+      "Optimizations": [
+        "Implement a scoring system to quantify image quality and clarity based on defined criteria.",
+        "Utilize machine learning techniques to continuously improve the accuracy of quality assessments."
+      ]
+    },
+    {
+      "Step": 4,
+      "Skill": "DesignRecommendations",
+      "Description": "Generates and dynamically refines design recommendations, providing interactive visualization for proposed changes.",
+      "Tasks": [
+        "Synthesize insights from previous steps to identify key areas for improvement.",
+        "Provide actionable recommendations on chart types, color schemes, layout, titles, labels, and annotations.",
+        "Incorporate a feedback loop to iteratively refine and visualize recommendations interactively."
+      ],
+      "Optimizations": [
+        "Implement a recommendation engine that learns from user feedback and adapts suggestions accordingly.",
+        "Provide a user-friendly interface for exploring and applying recommended changes to the Power BI report."
+      ]
+    }
+  ],
+  "FinalOutput": "A set of comprehensive, actionable, and dynamically refined recommendations presented in an interactive and standardized format, aimed at enhancing the design, clarity, and impact of Power BI reports.",
+  "Considerations": [
+    "Ensure robust encryption for all data handling and comply with GDPR and other data protection regulations.",
+    "Implement error handling, retry mechanisms, and graceful degradation across all API interactions to maintain reliability.",
+    "Monitor and adapt to the performance and rate limits of the Azure OpenAI Vision API, implementing throttling and queueing as needed.",
+    "Regularly validate and update the AI-generated recommendations against evolving design trends and industry standards.",
+    "Provide a user-friendly interface for interacting with the workflow, including options for customization and integration with existing Power BI workflows."
+  ]
+}

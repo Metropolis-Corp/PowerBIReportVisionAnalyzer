@@ -1,0 +1,125 @@
+import autogen
+
+# Coder Agent Configuration
+coder_config = {
+    "autoReply": "Processing code tasks...",
+    "maxConsecutiveAutoReplies": 1,
+    "skills": [
+        {
+            "skillName": "ExportToImage",
+            "parameters": {
+                "apiMethod": "batchProcessing",
+                "errorHandling": "robustRetry"
+            },
+            "updateParameters": "updateExportSettings"
+        },
+        {
+            "skillName": "AnalyzeImageWithGPT4Vision",
+            "parameters": {
+                "asyncCall": True,
+                "secureTransmission": True
+            },
+            "updateParameters": "updateAnalysisSettings"
+        }
+    ],
+    "workflow": [
+        {
+            "onReceive": "decodeInput",
+            "conditions": {
+                "ifComplexImageTask": "directToAdvancedImageProcessing",
+                "ifSimpleExportTask": "quickExportImage"
+            },
+            "onProcess": "processImageTasks",
+            "onComplete": "sendImageOutputs"
+        }
+    ],
+    "errorHandling": {
+        "retryLimit": 3,
+        "fallback": "notifyAdmin",
+        "errorMessages": {
+            "timeout": "Image processing timed out, will retry.",
+            "failure": "Image task failed, notifying admin."
+        },
+        "recoveryStrategies": {
+            "parseError": "Simplify input",
+            "validationError": "Request additional data"
+        }
+    },
+    "environmentConfig": {
+        "variables": {
+            "API_KEY": "ENCRYPTED_API_KEY",
+            "SERVICE_URL": "https://secure.example.com/api"
+        },
+        "securityPolicies": {
+            "dataEncryption": True,
+            "apiKeyHandling": "secureStorage"
+        }
+    },
+    "communication": {
+        "inputType": "Image",
+        "outputType": "Image",
+        "outputChannel": "DataTeam",
+        "protocols": {
+            "http": {
+                "method": "POST",
+                "contentType": "application/json"
+            },
+            "additionalProtocols": {
+                "https": {
+                    "method": "GET",
+                    "contentType": "application/json"
+                }
+            }
+        }
+    },
+    "performanceMetrics": {
+        "enableMonitoring": True,
+        "metrics": {
+            "taskCompletionTime": "log",
+            "successRate": "log"
+        }
+    }
+}
+
+# Create the Coder Agent
+coder = autogen.AssistantAgent(
+    name="Coder",
+    system_message="Handles API interactions and processes image-related tasks efficiently.",
+    llm_config=llm_config,  # Assumes the llm_config is defined as shown in previous examples
+    agent_config=coder_config,
+    error_policy="log_and_continue"
+)
+
+# Define the Coder Agent's skills
+def update_export_settings(parameters):
+    # Update the export settings based on the provided parameters
+    coder.update_skill_parameters("ExportToImage", parameters)
+
+def update_analysis_settings(parameters):
+    # Update the image analysis settings based on the provided parameters
+    coder.update_skill_parameters("AnalyzeImageWithGPT4Vision", parameters)
+
+def decode_input(input_data):
+    # Decode the input data and determine the task type
+    if is_complex_image_task(input_data):
+        return "directToAdvancedImageProcessing"
+    elif is_simple_export_task(input_data):
+        return "quickExportImage"
+    else:
+        raise ValueError("Invalid input data")
+
+def process_image_tasks(input_data):
+    # Process the image tasks based on the input data
+    if is_export_task(input_data):
+        coder.execute_skill("ExportToImage", input_data)
+    elif is_analysis_task(input_data):
+        coder.execute_skill("AnalyzeImageWithGPT4Vision", input_data)
+    else:
+        raise ValueError("Unsupported image task")
+
+def send_image_outputs(output_data):
+    # Send the image outputs to the specified channel
+    coder.send_message(output_data, channel=coder_config["communication"]["outputChannel"])
+
+# Add the Coder to the existing group chat setup
+groupchat.add_agent(coder)
